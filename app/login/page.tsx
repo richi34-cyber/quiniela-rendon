@@ -1,21 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   async function login() {
-    const { error } = await supabase.auth.signInWithOtp({
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({
       email,
+      password,
     });
+
+    setLoading(false);
 
     if (error) {
       alert(error.message);
-    } else {
-      alert("Revisa tu correo para iniciar sesión.");
+      return;
     }
+
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (
@@ -33,12 +46,28 @@ export default function LoginPage() {
           className="border p-2 w-full mb-3"
         />
 
+        <input
+          type="password"
+          placeholder="Contraseña"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="border p-2 w-full mb-3"
+        />
+
         <button
           onClick={login}
+          disabled={loading}
           className="border p-2 w-full"
         >
-          Enviar enlace de acceso
+          {loading ? "Ingresando..." : "Ingresar"}
         </button>
+
+        <p className="text-center mt-4">
+          ¿No tienes cuenta?{" "}
+          <Link href="/registro" className="underline">
+            Regístrate
+          </Link>
+        </p>
       </div>
     </main>
   );
